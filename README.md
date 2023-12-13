@@ -506,7 +506,7 @@ Karena berbeda koalisi politik, maka subnet dengan masyarakat yang berada pada R
 
 ```sh
 # IP Subnet dari Revolte
-REVOLTE_SUBNET="192.181.15.124/30"
+REVELTE_SUBNET="192.181.15.124/30"
 
 MULAI_MASA_PEMILU=$(date -d "2023-10-19T00:00" +"%Y-%m-%dT%H:%M")
 
@@ -517,14 +517,14 @@ iptables -A INPUT -p tcp -s $REVELTE_SUBNET --dport 80 -m time --datestart "$MUL
 
 iptables -A INPUT -p tcp --dport 22 -m time --weekdays Mon,Tue,Wed,Thu --timestart 12:00 --timestop 13:00 -j DROP
 iptables -A INPUT -p tcp --dport 22 -m time --weekdays Fri --timestart 11:00 --timestop 13:00 -j DROP
-iptables -A INPUT -p tcp --dport 22 -m time --weekdays Mon,Tue,Wed,Thu,Fri --timestart 08:00 --timestop 16:00 -j ACCEPT
+iptables -A INPUT -p tcp --dport 22 -m time --weekdays Mon,Tue,Wed,Thu,Fri --timestart 08:00 --timestop 16:00 -s 192.181.8.0/22 -j ACCEPT
 iptables -A INPUT -p tcp --dport 22 -j DROP
 ```
 
 **Keterangan: (Nomor 4)**
 
 ```sh
-iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+iptables -A INPUT -p tcp --dport 22 -s 192.181.8.0/22 -j ACCEPT
 iptables -A INPUT -p tcp --dport 22 -j DROP
 ```
 
@@ -535,7 +535,7 @@ iptables -A INPUT -p tcp --dport 22 -j DROP
 Tambahkan aturan pada `iptables -A INPUT -p tcp --dport 22 -j ACCEPT` menjadi:
 
 ```sh
-iptables -A INPUT -p tcp --dport 22 -m time --weekdays Mon,Tue,Wed,Thu,Fri --timestart 08:00 --timestop 16:00 -j ACCEPT
+iptables -A INPUT -p tcp --dport 22 -m time --weekdays Mon,Tue,Wed,Thu,Fri --timestart 08:00 --timestop 16:00 -s 192.181.8.0/22 -j ACCEPT
 ```
 
 -   mengizinkan akses SSH pada hari kerja (Senin hingga Jumat) pada jam kantor (08:00 - 16:00).
@@ -581,6 +581,14 @@ Pada hari Jumat pukul `13.30` dihasilkan `open` dan pada pukul `11.30` dihasilka
 
 -   Nomor 8:
 
+![nomor8a](https://cdn.discordapp.com/attachments/702797283795927123/1184542227767251045/image.png?ex=658c59ea&is=6579e4ea&hm=5186e4d7a3b92dd42e28ba3841f382dc5758d5384e04af115259258d10c9268a&)
+
+Melakukan `nmap` pada masa pemilu (tahun 2023).
+
+![nomor8b](https://cdn.discordapp.com/attachments/702797283795927123/1184542606714216448/image.png?ex=658c5a45&is=6579e545&hm=fbdeee24ac0be63ff5c328bdfb6106fc39be1df93f459878658d77f2ff8e6c9e&)
+
+Melakukan `nmap` pada masa di luar pemilu (tahun 2024).
+
 ## Soal Nomor 7
 
 Karena terdapat 2 WebServer, kalian diminta agar setiap client yang mengakses Sein dengan Port 80 akan didistribusikan secara bergantian pada Sein dan Stark secara berurutan dan request dari client yang mengakses Stark dengan port 443 akan didistribusikan secara bergantian pada Sein dan Stark secara berurutan.
@@ -597,9 +605,28 @@ Sadar akan adanya potensial saling serang antar kubu politik, maka WebServer har
 
 **Penyelesaian:**
 
+-   **Sein dan Stark (Web Server)**
+
+```sh
+iptables -N portscan
+
+iptables -A INPUT -m recent --name portscan --update --seconds 600 --hitcount 20 -j DROP
+iptables -A FORWARD -m recent --name portscan --update --seconds 600 --hitcount 20 -j DROP
+
+iptables -A INPUT -m recent --name portscan --set -j ACCEPT
+iptables -A FORWARD -m recent --name portscan --set -j ACCEPT
+```
+
 **Keterangan:**
 
+-   `-N portscan` : membuat chain iptables baru dengan nama "portscan". Chain ini akan digunakan untuk menyimpan informasi terkait deteksi port scanning.
+-   `-m recent --name portscan --update --seconds 600 --hitcount 20` : Menggunakan modul `recent` untuk mendeteksi port scanning. Aturan ini akan melakukan update pada `hitcount` (jumlah percobaan) setiap 600 detik (10 menit) dan jika jumlah percobaan melebihi 20, paket tersebut akan ditolak (DROP).
+
 **Output:**
+
+![nomor9](https://cdn.discordapp.com/attachments/702797283795927123/1184546997408116847/image.png?ex=658c5e5c&is=6579e95c&hm=04102c83614f2e9b67667e981c1eb196a5e35073932f78711a37be60fa09168d&)
+
+Melakukan ping ke ip web server, setelah ping ke-20, ping ke-21 dan seterusnya tidak berhasil.
 
 ## Soal Nomor 10
 
