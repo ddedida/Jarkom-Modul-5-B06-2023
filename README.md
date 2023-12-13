@@ -637,3 +637,5 @@ Karena kepala suku ingin tau paket apa saja yang di-drop, maka di setiap node se
 **Keterangan:**
 
 **Output:**
+
+# NO7 NO10 BROKEN
