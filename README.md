@@ -581,11 +581,11 @@ Pada hari Jumat pukul `13.30` dihasilkan `open` dan pada pukul `11.30` dihasilka
 
 -   Nomor 8:
 
-![nomor8a](https://cdn.discordapp.com/attachments/702797283795927123/1184542227767251045/image.png?ex=658c59ea&is=6579e4ea&hm=5186e4d7a3b92dd42e28ba3841f382dc5758d5384e04af115259258d10c9268a&)
+![nomor8a](https://cdn.discordapp.com/attachments/702797283795927123/1185313840443965530/image.png?ex=658f2889&is=657cb389&hm=3c3466bf4b4daf672cfaa90c53d053426c5819c25988aa4a515111722976a105&)
 
 Melakukan `nmap` pada masa pemilu (tahun 2023).
 
-![nomor8b](https://cdn.discordapp.com/attachments/702797283795927123/1184542606714216448/image.png?ex=658c5a45&is=6579e545&hm=fbdeee24ac0be63ff5c328bdfb6106fc39be1df93f459878658d77f2ff8e6c9e&)
+![nomor8b](https://cdn.discordapp.com/attachments/702797283795927123/1185314243466244137/image.png?ex=658f28e9&is=657cb3e9&hm=986d3f7e111acaeb3df34c12a52c91d18f1fcb5e039a9fc52cbf06194bc00c50&)
 
 Melakukan `nmap` pada masa di luar pemilu (tahun 2024).
 
@@ -595,9 +595,68 @@ Karena terdapat 2 WebServer, kalian diminta agar setiap client yang mengakses Se
 
 **Penyelesaian:**
 
+-   **Revolte (DNS Server)**
+
+```sh
+iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+iptables -A INPUT -p icmp -m connlimit --connlimit-above 3 --connlimit-mask 0 -j DROP
+```
+
+-   **Ritcher (DHCP Server)**
+
+```sh
+iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+iptables -A INPUT -p icmp -m connlimit --connlimit-above 3 --connlimit-mask 0 -j DROP
+```
+
+**Penyelesaian:**
+
+-   **Heiter dan Frieren (Router)**
+
+```sh
+iptables -t nat -F
+
+# Akses ke Sein port 80
+iptables -A PREROUTING -t nat -p tcp --dport 80 -d 192.181.8.2 -m statistic --mode nth --every 2 --packet 0 -j DNAT --to-destination 192.181.8.2
+iptables -A PREROUTING -t nat -p tcp --dport 80 -d 192.181.8.2 -j DNAT --to-destination 192.181.15.114
+
+# Akses ke Stark port 443
+
+iptables -A PREROUTING -t nat -p tcp --dport 443 -d 192.181.15.114 -m statistic --mode nth --every 2 --packet 0 -j DNAT --to-destination 192.181.8.2
+iptables -A PREROUTING -t nat -p tcp --dport 443 -d 192.181.15.114 -j DNAT --to-destination 192.181.15.114
+```
+
 **Keterangan:**
 
+Akses ke Sein port 80:
+
+-   Baris pertama: `iptables -A PREROUTING -t nat -p tcp --dport 80 -d 192.181.8.2 -m statistic --mode nth --every 2 --packet 0 -j DNAT --to-destination 192.181.8.2` : Jika paket yang menuju ke port 80 pada alamat tujuan 192.181.8.2 adalah paket yang ke-2 (berdasarkan mode nth), maka paket tersebut diarahkan (DNAT) ke alamat tujuan 192.181.8.2.
+-   Baris kedua: iptables -A PREROUTING -t nat -p tcp --dport 80 -d 192.181.8.2 -j DNAT --to-destination 192.181.15.114
+    Untuk paket selain paket ke-2, paket tersebut diarahkan ke alamat tujuan 192.181.15.114.
+
+Akses ke Stark port 443:
+
+-   Baris ketiga: `iptables -A PREROUTING -t nat -p tcp --dport 443 -d 192.181.15.114 -m statistic --mode nth --every 2 --packet 0 -j DNAT --to-destination 192.181.8.2` : Jika paket yang menuju ke port 443 pada alamat tujuan 192.181.15.114 adalah paket yang ke-2 (berdasarkan mode nth), maka paket tersebut diarahkan (DNAT) ke alamat tujuan 192.181.8.2.
+-   Baris keempat: iptables -A PREROUTING -t nat -p tcp --dport 443 -d 192.181.15.114 -j DNAT --to-destination 192.181.15.114
+    Untuk paket selain paket ke-2, paket tersebut diarahkan ke alamat tujuan 192.181.15.114.
+
 **Output:**
+
+[Skenario 1 : Mengakses Sein dengan port 80]
+
+-   Menjalankan command `while true; do nc -l -p 80 -c 'echo "Dari Sein"'; done` pada node Sein.
+-   Menjalankan command `while true; do nc -l -p 80 -c 'echo "Dari Stark"'; done` pada node Stark.
+-   Menjalankan command `nc [IP Sein] 80` pada node LaubHills:
+
+![nomor7a](https://cdn.discordapp.com/attachments/702797283795927123/1185315634872058006/image.png?ex=658f2a35&is=657cb535&hm=bb07e3d66e126bc08d61b7c3b5b75c4399f234fe9aca0245a661483169add7cd&)
+
+[Skenario 2 : Mengakses Stark dengan port 443]
+
+-   Menjalankan command `while true; do nc -l -p 443 -c 'echo "Dari Sein"'; done` pada node Sein.
+-   Menjalankan command `while true; do nc -l -p 443 -c 'echo "Dari Stark"'; done` pada node Stark.
+-   Menjalankan command `nc [IP Stark] 443` pada node LaubHills:
+
+![nomor7b](https://cdn.discordapp.com/attachments/702797283795927123/1185316978798366760/image.png?ex=658f2b75&is=657cb675&hm=bad3ba9f86219eccacc94144128c156918e94bb0ceed579e6f96d3238d4e6e3a&)
 
 ## Soal Nomor 9
 
@@ -634,8 +693,16 @@ Karena kepala suku ingin tau paket apa saja yang di-drop, maka di setiap node se
 
 **Penyelesaian:**
 
+```sh
+iptables -A INPUT  -j LOG --log-level debug --log-prefix 'Dropped Packet' -m limit --limit 1/second --limit-burst 10
+```
+
 **Keterangan:**
 
-**Output:**
+-   `-j LOG` : Menentukan bahwa jika paket memenuhi kondisi aturan, maka log pesan akan dicatat.
 
-# NO7 NO10 BROKEN
+-   `--log-level debug` : Menetapkan level log ke "debug". Ini menunjukkan bahwa pesan log yang dihasilkan akan memiliki tingkat detail debug.
+
+-   `--log-prefix 'Dropped Packet'` : Menetapkan awalan (prefix) pesan log menjadi 'Dropped Packet'. Jadi, jika paket ditolak, pesan log akan dimulai dengan teks 'Dropped Packet'.
+
+-   `-m limit --limit 1/second --limit-burst 10` : Menggunakan modul (module) "limit" untuk membatasi jumlah log pesan yang dibuat. Aturan ini membatasi pencatatan log menjadi satu pesan per detik, dengan batasan (burst) maksimal sebanyak 10 pesan.
