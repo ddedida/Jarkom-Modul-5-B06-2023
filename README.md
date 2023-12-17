@@ -595,22 +595,6 @@ Karena terdapat 2 WebServer, kalian diminta agar setiap client yang mengakses Se
 
 **Penyelesaian:**
 
--   **Revolte (DNS Server)**
-
-```sh
-iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
-iptables -A INPUT -p icmp -m connlimit --connlimit-above 3 --connlimit-mask 0 -j DROP
-```
-
--   **Ritcher (DHCP Server)**
-
-```sh
-iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
-iptables -A INPUT -p icmp -m connlimit --connlimit-above 3 --connlimit-mask 0 -j DROP
-```
-
-**Penyelesaian:**
-
 -   **Heiter dan Frieren (Router)**
 
 ```sh
@@ -631,13 +615,13 @@ iptables -A PREROUTING -t nat -p tcp --dport 443 -d 192.181.15.114 -j DNAT --to-
 Akses ke Sein port 80:
 
 -   Baris pertama: `iptables -A PREROUTING -t nat -p tcp --dport 80 -d 192.181.8.2 -m statistic --mode nth --every 2 --packet 0 -j DNAT --to-destination 192.181.8.2` : Jika paket yang menuju ke port 80 pada alamat tujuan 192.181.8.2 adalah paket yang ke-2 (berdasarkan mode nth), maka paket tersebut diarahkan (DNAT) ke alamat tujuan 192.181.8.2.
--   Baris kedua: iptables -A PREROUTING -t nat -p tcp --dport 80 -d 192.181.8.2 -j DNAT --to-destination 192.181.15.114
+-   Baris kedua: `iptables -A PREROUTING -t nat -p tcp --dport 80 -d 192.181.8.2 -j DNAT --to-destination 192.181.15.114`
     Untuk paket selain paket ke-2, paket tersebut diarahkan ke alamat tujuan 192.181.15.114.
 
 Akses ke Stark port 443:
 
 -   Baris ketiga: `iptables -A PREROUTING -t nat -p tcp --dport 443 -d 192.181.15.114 -m statistic --mode nth --every 2 --packet 0 -j DNAT --to-destination 192.181.8.2` : Jika paket yang menuju ke port 443 pada alamat tujuan 192.181.15.114 adalah paket yang ke-2 (berdasarkan mode nth), maka paket tersebut diarahkan (DNAT) ke alamat tujuan 192.181.8.2.
--   Baris keempat: iptables -A PREROUTING -t nat -p tcp --dport 443 -d 192.181.15.114 -j DNAT --to-destination 192.181.15.114
+-   Baris keempat: `iptables -A PREROUTING -t nat -p tcp --dport 443 -d 192.181.15.114 -j DNAT --to-destination 192.181.15.114`
     Untuk paket selain paket ke-2, paket tersebut diarahkan ke alamat tujuan 192.181.15.114.
 
 **Output:**
