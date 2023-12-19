@@ -43,7 +43,7 @@ Jumlah Host pada GrobeForest adalah 512
 
 ![image](https://github.com/ddedida/Jarkom-Modul-5-B06-2023/assets/108203648/b72f7902-a130-4586-adfc-7dcf80626252)
 
-Berikut merupakan [link](<[https://github.com/user/repo/blob/branch/other_file.md](https://docs.google.com/spreadsheets/d/18h_e6yaBEORnPLRlbLNUG6ELZ2ZwMwkHk0R6c12TuhY/edit?usp=sharing)https://docs.google.com/spreadsheets/d/18h_e6yaBEORnPLRlbLNUG6ELZ2ZwMwkHk0R6c12TuhY/edit?usp=sharing>) spreadsheet untuk pembagian ip masing-masing node.
+Berikut merupakan [link](https://docs.google.com/spreadsheets/d/18h_e6yaBEORnPLRlbLNUG6ELZ2ZwMwkHk0R6c12TuhY/edit?usp=sharing) spreadsheet untuk pembagian ip masing-masing node.
 
 **Konfigurasi Subnetting (setiap node) dan Routing (Aura, Frieren, dan Himmel):**
 
