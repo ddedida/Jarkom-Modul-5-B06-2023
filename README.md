@@ -513,11 +513,12 @@ MULAI_MASA_PEMILU=$(date -d "2023-10-19T00:00" +"%Y-%m-%dT%H:%M")
 SELESAI_MASA_PEMILU=$(date -d "2024-02-15T00:00" +"%Y-%m-%dT%H:%M")
 
 # Atur waktu untuk masa pemilu
-iptables -A INPUT -p tcp -s $REVELTE_SUBNET --dport 80 -m time --datestart "$MULAI_MASA_PEMILU" --datestop "$SELESAI_MASA_PEMILU" -j DROP
+iptables -A INPUT -p tcp -s $REVELTE_SUBNET -m time --datestart "$MULAI_MASA_PEMILU" --datestop "$SELESAI_MASA_PEMILU" -j DROP
 
-iptables -A INPUT -p tcp --dport 22 -m time --weekdays Mon,Tue,Wed,Thu --timestart 12:00 --timestop 13:00 -j DROP
-iptables -A INPUT -p tcp --dport 22 -m time --weekdays Fri --timestart 11:00 --timestop 13:00 -j DROP
-iptables -A INPUT -p tcp --dport 22 -m time --weekdays Mon,Tue,Wed,Thu,Fri --timestart 08:00 --timestop 16:00 -s 192.181.8.0/22 -j ACCEPT
+iptables -A INPUT -p tcp -m time --weekdays Mon,Tue,Wed,Thu --timestart 12:00 --timestop 13:00 -j DROP
+iptables -A INPUT -p tcp -m time --weekdays Fri --timestart 11:00 --timestop 13:00 -j DROP
+iptables -A INPUT -p tcp -m time --weekdays Mon,Tue,Wed,Thu,Fri --timestart 08:00 --timestop 16:00 -s 192.181.8.0/22 -j ACCEPT
+iptables -A INPUT -p tcp --dport 22 -s 192.181.8.0/22 -j ACCEPT
 iptables -A INPUT -p tcp --dport 22 -j DROP
 ```
 
@@ -535,7 +536,7 @@ iptables -A INPUT -p tcp --dport 22 -j DROP
 Tambahkan aturan pada `iptables -A INPUT -p tcp --dport 22 -j ACCEPT` menjadi:
 
 ```sh
-iptables -A INPUT -p tcp --dport 22 -m time --weekdays Mon,Tue,Wed,Thu,Fri --timestart 08:00 --timestop 16:00 -s 192.181.8.0/22 -j ACCEPT
+iptables -A INPUT -p tcp -m time --weekdays Mon,Tue,Wed,Thu,Fri --timestart 08:00 --timestop 16:00 -s 192.181.8.0/22 -j ACCEPT
 ```
 
 -   mengizinkan akses SSH pada hari kerja (Senin hingga Jumat) pada jam kantor (08:00 - 16:00).
@@ -543,11 +544,31 @@ iptables -A INPUT -p tcp --dport 22 -m time --weekdays Mon,Tue,Wed,Thu,Fri --tim
 **Keterangan: (Nomor 6)**
 
 ```sh
-iptables -A INPUT -p tcp --dport 22 -m time --weekdays Mon,Tue,Wed,Thu --timestart 12:00 --timestop 13:00 -j DROP
-iptables -A INPUT -p tcp --dport 22 -m time --weekdays Fri --timestart 11:00 --timestop 13:00 -j DROP
+iptables -A INPUT -p tcp -m time --weekdays Mon,Tue,Wed,Thu --timestart 12:00 --timestop 13:00 -j DROP
+iptables -A INPUT -p tcp -m time --weekdays Fri --timestart 11:00 --timestop 13:00 -j DROP
 ```
 
 -   menetapkan pembatasan waktu untuk akses SSH pada hari kerja (Senin hingga Kamis) dan Jumat pada waktu-waktu tertentu. SSH tidak diizinkan selama jam makan dan jumatan (12:00 - 13:00 pada hari kerja dan 11:00 - 13:00 pada Jumat).
+
+**Keterangan: (Nomor 8)**
+
+```sh
+# IP Subnet dari Revolte
+REVELTE_SUBNET="192.181.15.124/30"
+
+MULAI_MASA_PEMILU=$(date -d "2023-10-19T00:00" +"%Y-%m-%dT%H:%M")
+
+SELESAI_MASA_PEMILU=$(date -d "2024-02-15T00:00" +"%Y-%m-%dT%H:%M")
+
+# Atur waktu untuk masa pemilu
+iptables -A INPUT -p tcp -s $REVELTE_SUBNET -m time --datestart "$MULAI_MASA_PEMILU" --datestop "$SELESAI_MASA_PEMILU" -j DROP
+```
+
+-   `-A INPUT` : menambahkan aturan ke chain `INPUT`.
+-   `-p tcp` : menentukan protokol yang digunakan (TCP).
+-   `-s $REVELTE_SUBNET` : menentukan sumber alamat IP, yaitu alamat IP subnet Revolte.
+-   `-m time --datestart "$MULAI_MASA_PEMILU" --datestop "$SELESAI_MASA_PEMILU"` : menggunakan modul waktu untuk membatasi aturan selama periode tertentu, dalam hal ini, dari tanggal dan waktu mulai pemilu hingga tanggal dan waktu selesai pemilu.
+-   `-j DROP` : Jika paket memenuhi syarat (berasal dari subnet Revolte dan berada dalam rentang waktu pemilu), aturan ini akan menjatuhkan (DROP) paket-paket tersebut, sehingga mencegah mereka melewati firewall.
 
 **Output:**
 
